@@ -2,6 +2,7 @@ import math
 import os
 from tempfile import NamedTemporaryFile
 
+import logging
 import librosa
 import numpy as np
 import soundfile as sf
@@ -101,6 +102,28 @@ class SpectrogramParser(AudioParser):
         else:
             self.noise_injector = None
 
+        self.cur_epoch = 0
+        self.cur_max_stddev = 0
+
+
+    def set_epoch(self, cur_epoch):
+        self.cur_epoch = cur_epoch
+        if not self.aug_conf or self.aug_conf.gnoise_max_stddev==0:
+            return
+        max_stddev=self.aug_conf.gnoise_max_stddev
+        self.cur_max_stddev = min(max_stddev*self.cur_epoch/self.aug_conf.gnoise_anneal_epochs, max_stddev)
+        print('gauss-noise stddev=%f' % (self.cur_max_stddev))
+        
+        
+    def add_gauss_noise(self, x):
+        if not self.aug_conf or self.aug_conf.gnoise_max_stddev==0:
+            return x
+
+        stddev = np.random.uniform(low=0, high=self.cur_max_stddev)
+        noise = stddev * np.random.randn(*x.shape)
+        return x + noise
+        
+
     def parse_audio(self, audio_path):
         if self.aug_conf and self.aug_conf.speed_volume_perturb:
             y = load_randomly_augmented_audio(audio_path, self.sample_rate)
@@ -110,6 +133,8 @@ class SpectrogramParser(AudioParser):
             add_noise = np.random.binomial(1, self.aug_conf.noise_prob)
             if add_noise:
                 y = self.noise_injector.inject_noise(y)
+
+        y = self.add_gauss_noise(y)
         n_fft = int(self.sample_rate * self.window_size)
         win_length = n_fft
         hop_length = int(self.sample_rate * self.window_stride)

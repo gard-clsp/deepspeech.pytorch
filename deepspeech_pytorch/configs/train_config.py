@@ -36,7 +36,8 @@ class AugmentationConfig:
     noise_prob: float = 0.4  # Probability of noise being added per sample
     noise_min: float = 0.0  # Minimum noise level to sample from. (1.0 means all noise, not original signal)
     noise_max: float = 0.5  # Maximum noise levels to sample from. Maximum 1.0
-
+    gnoise_max_stddev: float = 0 # Max stddev for Gaussian noise in Rand Smoothing
+    gnoise_anneal_epochs: int = 30 # Number of steps (in recordings) to go from 0 noise stddev to max_stddev
 
 @dataclass
 class DataConfig:

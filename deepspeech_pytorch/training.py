@@ -199,6 +199,7 @@ def train(cfg):
         state.set_epoch(epoch=epoch)
         train_sampler.set_epoch(epoch=epoch)
         train_sampler.reset_training_step(training_step=state.training_step)
+        train_dataset.set_epoch(epoch)
         for i, (data) in enumerate(train_loader, start=state.training_step):
             state.set_training_step(training_step=i)
             inputs, targets, input_percentages, target_sizes = data
