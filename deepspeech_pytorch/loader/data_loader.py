@@ -112,6 +112,7 @@ class SpectrogramParser(AudioParser):
             return
         max_stddev=self.aug_conf.gnoise_max_stddev
         self.cur_max_stddev = min(max_stddev*self.cur_epoch/self.aug_conf.gnoise_anneal_epochs, max_stddev)
+        #print('{} {}'.format(self.aug_conf, self.cur_epoch))
         print('gauss-noise stddev=%f' % (self.cur_max_stddev))
         
         
